@@ -35,6 +35,8 @@ public class NCDCRecordInputFormatNew extends TextInputFormat {
     public class NCDCRecordReader extends RecordReader<LongWritable, Text> {
         //private BufferedReader in;
         private LineReader in ; 
+        private FSDataInputStream is ;
+        private Configuration job ;
         private long start, end;
         private long pos=0;
         //private long date_tmp;
@@ -42,6 +44,9 @@ public class NCDCRecordInputFormatNew extends TextInputFormat {
         private int maxLineLength;
         private LongWritable currentKey = new LongWritable();
         private Text currentValue = new Text();
+        
+        
+        
         @Override
         public void initialize(InputSplit split, TaskAttemptContext context) throws IOException, InterruptedException {
            //initialized run once per split
@@ -49,14 +54,14 @@ public class NCDCRecordInputFormatNew extends TextInputFormat {
             long date_tmp = 0;
             String station_tmp = new String();
             station_tmp = null;
-           Configuration job = context.getConfiguration();
+           job = context.getConfiguration();
            this.maxLineLength = job.getInt("mapred.linerecordreader.maxlength",Integer.MAX_VALUE);
 
            // Open the file.
            FileSplit fileSplit = (FileSplit)split;
            Path file = fileSplit.getPath();
            FileSystem fs = file.getFileSystem(job);
-           FSDataInputStream is = fs.open(file);
+           is = fs.open(file);
            
            // Find the beginning and the end of the split.
            start = fileSplit.getStart();
@@ -80,7 +85,8 @@ public class NCDCRecordInputFormatNew extends TextInputFormat {
            
            if(skipFirstLine){
                start += in.readLine(new Text(),0,(int)Math.min((long)Integer.MAX_VALUE, end - start));
-               
+               this.pos = start;
+               LOG.info("skip line " + Long.toString(start)) ;
                long start_tmp = fileSplit.getStart();
                BufferedReader buffer = new BufferedReader(new InputStreamReader(is));  
                --start_tmp;
@@ -90,9 +96,11 @@ public class NCDCRecordInputFormatNew extends TextInputFormat {
                    is.seek(start_tmp);
                    buffer = new BufferedReader(new InputStreamReader(is));   
                    tmp = (char) buffer.read();  
+                   LOG.info("read one byte before " + tmp) ;
                   
                }while(tmp!='\n');
                String pre = buffer.readLine();
+               LOG.info("preline " + pre) ;
                String[] vArray2 = pre.split(",");
                
                while(skipthisLine){
@@ -102,14 +110,18 @@ public class NCDCRecordInputFormatNew extends TextInputFormat {
 	               date_tmp = Long.parseLong(vArray[1]);
 	               station_tmp = vArray[0];
 	               
-	               
+	               LOG.info("nextline " + v.toString()) ;
 	               if(date_tmp==Long.parseLong(vArray2[1]) && station_tmp.equals(vArray2[0])){
 	            	   
 	            	   skipthisLine = true;   
+	            	   LOG.info("skipped " ) ;
 	            	   pos += size;
 	            	}
 	               else{
 	            	   skipthisLine = false;
+	            	   LOG.info("not skip " ) ;
+	            	   is.seek(pos);
+	            	   in = new LineReader(is, job);
 	               }
                }
                   
@@ -117,7 +129,7 @@ public class NCDCRecordInputFormatNew extends TextInputFormat {
            
            
            }
-           this.pos = start;
+           
 }
 
         @Override
@@ -188,6 +200,9 @@ public class NCDCRecordInputFormatNew extends TextInputFormat {
                     else{
                         date_tmp = 0;
                         station_tmp = null;
+                        
+                        is.seek(pos);
+                        in = new LineReader(is,job);
                         flag = false;
                         break;
                     }

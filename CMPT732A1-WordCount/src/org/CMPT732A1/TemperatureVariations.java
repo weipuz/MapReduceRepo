@@ -29,7 +29,7 @@ public class TemperatureVariations {
            throws IOException, InterruptedException {
             String in = value.toString();
             String[] inArrays = in.split("\n");
-            LOG.info("Map key "+ in);
+            //LOG.info("Map key "+ in);
             for(int i=0;i<inArrays.length; i++){
            // if (inArray[0].equals("USW00094728"))
            // {
@@ -95,7 +95,7 @@ public class TemperatureVariations {
         job.setMapperClass(Map.class);
         job.setReducerClass(Reduce.class);
 
-        job.setInputFormatClass(NCDCRecordInputFormat.class);
+        job.setInputFormatClass(NCDCRecordInputFormatNew.class);
         job.setOutputFormatClass(SequenceFileOutputFormat.class);
         
         FileInputFormat.addInputPath(job, new Path(args[0]));
