@@ -110,7 +110,7 @@
 	               while(skipthisLine){
 	            	   in.mark(maxLineLength);
 		               Text v = new Text(in.readLine());
-		               long size = (long) v.getLength();
+		               long size = (long) v.getLength()+1;
 		               String[] vArray = v.toString().split(",");
 		               date_tmp = Long.parseLong(vArray[1]);
 		               station_tmp = vArray[0];
@@ -157,7 +157,7 @@
 	                }
 	             currentValue.clear();
 	             final Text endline = new Text("\n");
-	             int newSize = 0;
+	             int newSize = 1;
 	             boolean flag = true;
 	             
 	             if(pos > end){
@@ -178,10 +178,10 @@
 	                        break;
 	                    	
 	                    	}
-	                    newSize = t.length();
+	                    newSize = t.length()+1;
 	                        
 	                        //LOG.info(v.toString() +" size "+ Integer.toString(newSize));
-	                    if(newSize == 0){
+	                    if(newSize == 1){
 	                        flag = false;
 	                        break;
 	                    }
@@ -220,7 +220,7 @@
 	                        break;
 	                    }
 	             }
-	                if (newSize  == 0) {
+	                if (newSize  == 1) {
 	                    currentKey = null;
 	                    currentValue = null;
 	                    return false;
