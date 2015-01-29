@@ -144,6 +144,8 @@ public class TemperatureVariations {
         job.getConfiguration().setLong("mapreduce.input.fileinputformat.split.maxsize", size);
         job.setMapperClass(Map.class);
         job.setReducerClass(Reduce.class);
+        job.setPartitionerClass(NCDCPartitioner.class);
+        job.setNumReduceTasks(6);
 
         job.setInputFormatClass(NCDCRecordInputFormat.class);
         job.setOutputFormatClass(SequenceFileOutputFormat.class);
